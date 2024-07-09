@@ -7,8 +7,7 @@ const handleValidationErrors = (
   res: Response,
   next: NextFunction
 ) => {
-
-    //Get validation error results
+  //Get validation error results
   const errors = validationResult(req);
 
   //Check if there is errors
@@ -30,5 +29,30 @@ export const validateMyUserRequest = [
     .withMessage("AddressLine1 must be a string"),
   body("city").isString().notEmpty().withMessage("City must be a string"),
   body("country").isString().notEmpty().withMessage("Country must be a string"),
+  handleValidationErrors,
+];
+
+//Validation of request body for creating a new Restaurant
+export const validateMyRestaurantRequest = [
+  body("restaurantName").notEmpty().withMessage("Restaurant Name is required"),
+  body("city").notEmpty().withMessage("City is required"),
+  body("country").notEmpty().withMessage("Country is required"),
+  body("deliveryPrice")
+    .isFloat({ min: 0 })
+    .withMessage("Delivery Price must be a positive number"),
+  body("estimatedDeliveryTime")
+    .isInt({ min: 0 })
+    .withMessage("Estimated Delivery Time must be a positive integer"),
+  body("cruisines")
+    .isArray()
+    .withMessage("Cruisines must be an array")
+    .not()
+    .isEmpty()
+    .withMessage("Cruisines must not be empty"),
+  body("menuItems").isArray().withMessage("Menu Items must be an array"),
+  body("menuItems.*.name").notEmpty().withMessage("Menu Item Name is required"),
+  body("menuItems.*.price")
+    .isFloat({ min: 0 })
+    .withMessage("Menu Item Price is required and must be a positive number"),
   handleValidationErrors,
 ];

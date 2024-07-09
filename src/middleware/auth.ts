@@ -49,11 +49,10 @@ export const jwtParse = async (
       return res.sendStatus(401);
     }
 
-    //If user exists set auth0Id and userId in request object
-    req.auth0Id = auth0Id as string; 
+    //If user exists set auth0Id and userId in request body
+    req.auth0Id = auth0Id as string;
     req.userId = user._id.toString(); //MongoDB ID
     next();
-
   } catch (error) {
     //Dont give too many clues what is wrong with backend to prevent hackers
     //401: Unauthorized

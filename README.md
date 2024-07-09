@@ -19,7 +19,6 @@ HomeCruisine Tulsa is a full-stack platform designed to bridge the gap between h
 - **Auth0**: User login and security
 - **react-query**: Handle API request by managing state like success, loading, error
 - **zod**: Form Schema validation working with **react-form-hook** and **shadcn** form
-- **Cloudinary**: Image Hosting API integration
 
 ### Back End
 
@@ -28,6 +27,9 @@ HomeCruisine Tulsa is a full-stack platform designed to bridge the gap between h
 - **express-oauth2-jwt-bearer**: Backend API JWT Auth check with Auth0
 - **jsonwebtoken**: Parsing and decoding access token
 - **express-validator**: Validation for request body
+- **cloudinary**: Image Hosting API integration
+- **multer**: Manage Image properties
+  --@types/multer required
 
 ### Services
 

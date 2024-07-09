@@ -11,9 +11,9 @@ router.get("/", jwtCheck, jwtParse, MyUserController.getCurrentUser);
 router.post("/", jwtCheck, MyUserController.createCurrentUser);
 router.put(
   "/",
+  validateMyUserRequest, //Check Request Body, no fields missing
   jwtCheck, //Check token Authorization
   jwtParse, //Check User exists, Get User Info from JWT
-  validateMyUserRequest, //Check Request Body, no fields missing
   MyUserController.updateCurrentUser
 );
 
