@@ -6,6 +6,8 @@ import { validateMyRestaurantRequest } from "../middleware/validation";
 
 const router = express.Router();
 
+router.get("/", jwtCheck, jwtParse, MyRestrauntController.getMyRestraunt);
+
 //Multer Store image in memory
 const storage = multer.memoryStorage();
 //Validate image size
@@ -16,15 +18,22 @@ const upload = multer({
   },
 });
 
-router.get("/", jwtCheck, jwtParse, MyRestrauntController.getMyRestraunt);
-
 router.post(
   "/",
   upload.single("imageFile"), //Check binary image in request, store image in memory, put image in req.file
-  validateMyRestaurantRequest,
+  validateMyRestaurantRequest, //Validate all the fields of the body in request
   jwtCheck,
   jwtParse,
   MyRestrauntController.createMyRestraunt
+);
+
+router.put(
+  "/",
+  upload.single("imageFile"),
+  validateMyRestaurantRequest,
+  jwtCheck,
+  jwtParse,
+  MyRestrauntController.updateMyRestraunt
 );
 
 export default router;
