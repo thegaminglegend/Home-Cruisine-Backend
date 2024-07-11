@@ -20,6 +20,10 @@ HomeCruisine Tulsa is a full-stack platform designed to bridge the gap between h
 - **react-query**: Handle API request by managing state like success, loading, error
 - **zod**: Form Schema validation working with **react-form-hook** and **shadcn** form
 
+#### Special Shadcn components
+
+- **aspect ratio**: defines a size and can keep all images at the same ratio
+
 ### Back End
 
 - **Node/Express**: Backend framework

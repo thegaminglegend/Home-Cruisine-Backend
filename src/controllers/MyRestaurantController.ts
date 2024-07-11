@@ -44,4 +44,21 @@ const createMyRestraunt = async (req: Request, res: Response) => {
   }
 };
 
-export default { createMyRestraunt };
+const getMyRestraunt = async (req: Request, res: Response) => {
+  try {
+    const restaurant = await Restraunt.findOne({ user: req.userId });
+
+    if (!restaurant) {
+      //404: Not Found
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+
+    res.json(restaurant);
+  } catch (error) {
+    console.log(error);
+    //500: Internal Server Error
+    res.status(500).json({ message: "Error fetching restaurant" });
+  }
+};
+
+export default { createMyRestraunt, getMyRestraunt };

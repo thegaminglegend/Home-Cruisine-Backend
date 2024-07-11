@@ -16,6 +16,8 @@ const upload = multer({
   },
 });
 
+router.get("/", jwtCheck, jwtParse, MyRestrauntController.getMyRestraunt);
+
 router.post(
   "/",
   upload.single("imageFile"), //Check binary image in request, store image in memory, put image in req.file
