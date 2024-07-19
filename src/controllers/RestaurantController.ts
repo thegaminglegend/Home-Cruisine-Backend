@@ -1,6 +1,26 @@
 import { Request, Response } from "express";
 import Restaurant from "../models/restaurant";
 
+//Function to get a restaurant by its id
+const getRestaurant = async (req: Request, res: Response) => {
+  try {
+    const restaurantId = req.params.restaurantId;
+    //find the restaurant by its id
+    const restaurant = await Restaurant.findById(restaurantId);
+
+    //404: Not found
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+
+    res.json(restaurant);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+//Function to list all the restaurants in a city and apply any filters
 const searchRestaurants = async (req: Request, res: Response) => {
   try {
     const city = req.params.city;
@@ -85,4 +105,4 @@ const searchRestaurants = async (req: Request, res: Response) => {
   }
 };
 
-export default { searchRestaurants };
+export default { searchRestaurants, getRestaurant };
