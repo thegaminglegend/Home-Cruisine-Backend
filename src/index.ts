@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import myUserRoute from "./routes/MyUserRoute";
 import myRestaurantRoute from "./routes/MyRestaurantRoute";
 import restaurantRoute from "./routes/RestaurantRoute";
+import orderRoute from "./routes/OrderRoute";
 import { v2 as cloudinary } from "cloudinary";
 
 //Connect to MongoDB
@@ -31,11 +32,12 @@ app.get("/health", async (req: Request, res: Response) => {
   res.send({ message: "health OK!" });
 });
 
-//Routes
+//Protected Routes
+app.use("/api/order", orderRoute);
 //my: convention in REST indicates to the BACKEND to do something to the current user
 app.use("/api/my/user", myUserRoute);
 app.use("/api/my/restaurant", myRestaurantRoute);
-//Public route
+//Public routes
 app.use("/api/restaurant", restaurantRoute);
 
 //Start server on port 7000
