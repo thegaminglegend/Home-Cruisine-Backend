@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import { Request, Response } from "express";
 import Restaurant, { MenuItemType } from "../models/restaurant";
+import Order from "../models/order";
 
 const STRIPE = new Stripe(process.env.STRIPE_API_KEY as string);
 const FRONTEND_URL = process.env.FRONTEND_URL as string;
@@ -35,6 +36,16 @@ const createCheckoutSession = async (req: Request, res: Response) => {
       throw new Error("Restaurant not found");
     }
 
+    //create a new order to be saved in DB
+    const newOrder = new Order({
+      restaurant: restaurant,
+      user: req.userId,
+      status: "placed",
+      deliveryDetails: checkoutSessionRequest.deliveryDetails,
+      cartItems: checkoutSessionRequest.cartItems,
+      createdAt: new Date(),
+    });
+
     //create line items for the cart items
     const lineItems = createLineItems(
       checkoutSessionRequest,
@@ -44,7 +55,7 @@ const createCheckoutSession = async (req: Request, res: Response) => {
     //create a checkout session
     const session = await createSession(
       lineItems,
-      "TEST_ORDER_ID",
+      newOrder._id.toString(),
       restaurant.deliveryPrice,
       restaurant.id.toString()
     );
@@ -54,6 +65,8 @@ const createCheckoutSession = async (req: Request, res: Response) => {
       return res.status(500).json({ message: "Error creating stripe session" });
     }
 
+    //wait until order is saved to DB
+    await newOrder.save();
     res.json({ url: session.url });
   } catch (error: any) {
     //500: Internal Server Error
@@ -128,7 +141,7 @@ const createSession = async (
       restaurantId,
     },
     //send the user to this url after payment successful
-    success_url: `${FRONTEND_URL}/order-status?sucess=true`,
+    success_url: `${FRONTEND_URL}/order-status?success=true`,
     //send the user back to restuarant details page after payment failed or cancelled
     cancel_url: `${FRONTEND_URL}/detail/${restaurantId}?cancelled=true`,
   });
