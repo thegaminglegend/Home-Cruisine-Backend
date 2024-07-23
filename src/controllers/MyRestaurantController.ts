@@ -1,14 +1,15 @@
 import { Request, Response } from "express";
-import Restraunt from "../models/restaurant";
+import Restaurant from "../models/restaurant";
 import cloudinary from "cloudinary";
 import mongoose from "mongoose";
+import Order from "../models/order";
 
 //Function to create restraunt of logged in user
-const createMyRestraunt = async (req: Request, res: Response) => {
+const createMyRestaurant = async (req: Request, res: Response) => {
   try {
     // Check if user already created a restraunt
     // A User can only have one restraunt
-    const existingRestraunt = await Restraunt.findOne({ user: req.userId });
+    const existingRestraunt = await Restaurant.findOne({ user: req.userId });
 
     if (existingRestraunt) {
       //409: Conflict-Dublicates
@@ -19,7 +20,7 @@ const createMyRestraunt = async (req: Request, res: Response) => {
     const imageUrl = await uploadImage(req.file as Express.Multer.File);
 
     //Initialize restraunt object with request body
-    const restraunt = new Restraunt(req.body);
+    const restraunt = new Restaurant(req.body);
 
     //Store restraunt properties to DB
     restraunt.imageUrl = imageUrl;
@@ -38,9 +39,9 @@ const createMyRestraunt = async (req: Request, res: Response) => {
 };
 
 //Function to get restraunt of logged in user
-const getMyRestraunt = async (req: Request, res: Response) => {
+const getMyRestaurant = async (req: Request, res: Response) => {
   try {
-    const restaurant = await Restraunt.findOne({ user: req.userId });
+    const restaurant = await Restaurant.findOne({ user: req.userId });
 
     if (!restaurant) {
       //404: Not Found
@@ -56,9 +57,9 @@ const getMyRestraunt = async (req: Request, res: Response) => {
 };
 
 //Function to update restraunt of logged in user
-const updateMyRestraunt = async (req: Request, res: Response) => {
+const updateMyRestaurant = async (req: Request, res: Response) => {
   try {
-    const restaurant = await Restraunt.findOne({ user: req.userId });
+    const restaurant = await Restaurant.findOne({ user: req.userId });
 
     if (!restaurant) {
       //404: Not Found
@@ -92,6 +93,7 @@ const updateMyRestraunt = async (req: Request, res: Response) => {
   }
 };
 
+//Function to upload image to cloudinary
 const uploadImage = async (file: Express.Multer.File) => {
   //get image from request
   const image = file;
@@ -108,4 +110,66 @@ const uploadImage = async (file: Express.Multer.File) => {
   return uploadResponse.url;
 };
 
-export default { createMyRestraunt, getMyRestraunt, updateMyRestraunt };
+//Function to get all orders of the restaurant
+const getMyRestaurantOrders = async (req: Request, res: Response) => {
+  try {
+    //get the restraunt of the logged in user
+    const restaurant = await Restaurant.findOne({ user: req.userId });
+
+    if (!restaurant) {
+      //404: Not Found
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+
+    //get all the orders of the restraunt and the linked restaurant and user
+    const orders = await Order.find({ restaurant: restaurant._id })
+      .populate("restaurant")
+      .populate("user");
+
+    res.json(orders);
+  } catch (error) {
+    console.log(error);
+    //500: Internal Server Error
+    res.status(500).json({ message: "Something Went Wrong" });
+  }
+};
+
+//Function to update order status
+const updateOrderStatus = async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      //404: Not Found
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const restaurant = await Restaurant.findById(order.restaurant);
+
+    //check if the restaurant of the order belongs to the logged in user
+    if (restaurant?.user?._id.toString() !== req.userId) {
+      //401: Unauthorized
+      return res.status(401).send({ message: "Unauthorized" });
+    }
+
+    order.status = status;
+    await order.save();
+
+    res.status(200).send(order);
+  } catch (error) {
+    console.log(error);
+    //500: Internal Server Error
+    res.status(500).json({ message: "Unable to update order status" });
+  }
+};
+
+export default {
+  createMyRestaurant,
+  getMyRestaurant,
+  updateMyRestaurant,
+  getMyRestaurantOrders,
+  updateOrderStatus,
+};

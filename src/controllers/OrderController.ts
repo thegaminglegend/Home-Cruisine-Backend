@@ -22,6 +22,7 @@ type CheckoutSessionRequest = {
   restaurantId: string;
 };
 
+//function to get all orders of the logged in user
 const getMyOrders = async (req: Request, res: Response) => {
   try {
     //find all orders for the user
