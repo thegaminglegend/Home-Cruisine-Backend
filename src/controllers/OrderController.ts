@@ -5,6 +5,7 @@ import Order from "../models/order";
 
 const STRIPE = new Stripe(process.env.STRIPE_API_KEY as string);
 const FRONTEND_URL = process.env.FRONTEND_URL as string;
+const STRIPE_ENDPOINT_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
 
 type CheckoutSessionRequest = {
   cartItems: {
@@ -21,6 +22,46 @@ type CheckoutSessionRequest = {
   restaurantId: string;
 };
 
+//function to handle stripe webhook
+const stripeWebhookHandler = async (req: Request, res: Response) => {
+  let event;
+
+  try {
+    const sig = req.headers["stripe-signature"];
+    //construct the event
+    event = STRIPE.webhooks.constructEvent(
+      req.body,
+      sig as string,
+      STRIPE_ENDPOINT_SECRET //check if request comes from stripe
+    );
+  } catch (error: any) {
+    console.log(error);
+    //400: Bad Request
+    return res.status(400).send(`Webhook Error: ${error.message}`);
+  }
+
+  // Handle event that is successful
+  if (event.type === "checkout.session.completed") {
+    //get the order id from the metadata and find the order from DB
+    const order = await Order.findById(event.data.object.metadata?.orderId);
+
+    //if order not found, defensive programming
+    if (!order) {
+      //404: Not Found
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    //update the order status and add total amount to save in DB
+    order.totalAmount = event.data.object.amount_total;
+    order.status = "paid";
+
+    await order.save();
+  }
+
+  res.status(200).send();
+};
+
+//function to handle frontend request of checking out with stripe
 const createCheckoutSession = async (req: Request, res: Response) => {
   try {
     //get the request body
@@ -55,6 +96,7 @@ const createCheckoutSession = async (req: Request, res: Response) => {
     //create a checkout session
     const session = await createSession(
       lineItems,
+      //meta data
       newOrder._id.toString(),
       restaurant.deliveryPrice,
       restaurant.id.toString()
@@ -149,4 +191,4 @@ const createSession = async (
   return sessionData;
 };
 
-export default { createCheckoutSession };
+export default { createCheckoutSession, stripeWebhookHandler };

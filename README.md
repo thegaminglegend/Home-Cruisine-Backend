@@ -35,9 +35,11 @@ HomeCruisine Tulsa is a full-stack platform designed to bridge the gap between h
 - **multer**: Manage Image properties
   --@types/multer required
 - **stripe**: SDK for handling stripe transactions
+- **concurrently**: To start both backend server and stripe cli at the same time (For localhost development environment )
 
 ### Services
 
 - **Render**: Front end Back end hosting
 - **Cloudinary**: Image Hosting
 - **stripe**: Checkout Finance Transactions
+- **stripe cli**: Sending information to backend from stripe (For localhost testing)

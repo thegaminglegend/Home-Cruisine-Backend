@@ -22,10 +22,13 @@ cloudinary.config({
 
 //Create express server
 const app = express();
-//Middleware convert request body to json
-app.use(express.json());
 //Middleware for CORS
 app.use(cors());
+
+//convert request body to raw instead of json for stripe endpoint
+app.use("/api/order/checkout/webhook", express.raw({ type: "*/*" }));
+//Middleware convert request body to json
+app.use(express.json());
 
 //Health check Endpoint
 app.get("/health", async (req: Request, res: Response) => {
